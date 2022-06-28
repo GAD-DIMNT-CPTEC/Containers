@@ -1,0 +1,90 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%files
+    /mnt/beegfs/carlos.bastarz/pacotes/BAM_V1.2.0.tar.gz /root/
+
+%post
+    apt-get -y update
+    apt-get -y upgrade
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt install -y build-essential
+    apt install -y automake autoconf autoconf-archive libtool pkg-config
+    apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
+    apt install -y wget
+    apt install -y gcc-4.8 g++-4.8 gfortran-4.8
+    apt install -y libstdc++-6-dev manpages-dev
+    apt install -y libhugetlbfs0 libhugetlbfs-dev libblas3 liblapack3
+    apt install -y grads
+    apt install -y glueviz libjpeg8 imagemagick
+
+    cd $SINGULARITY_ROOTFS/usr/bin
+    ln -s make gmake
+
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 100
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-4.8 100
+    update-alternatives --auto gcc
+    update-alternatives --auto g++
+    update-alternatives --auto gfortran
+
+    apt-get -y autoremove
+    apt-get -y autoclean
+    apt-get -y clean
+
+    echo
+    echo ">>> BUILDING THE MPICH 3.3..."
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt
+    wget https://www.mpich.org/static/downloads/3.3/mpich-3.3.tar.gz
+
+    mkdir -p $SINGULARITY_ROOTFS/opt/mpich
+    cd $SINGULARITY_ROOTFS/opt
+    tar -zxvf mpich-3.3.tar.gz
+    cd $SINGULARITY_ROOTFS/opt/mpich-3.3
+     
+    ./configure --prefix=$SINGULARITY_ROOTFS/usr/local
+    make 
+    make install
+
+    ldconfig
+
+    echo
+    echo ">>> BUILDING THE BAM_V1.2.0 MODEL..."
+    echo
+
+    tar -zxvf /root/BAM_V1.2.0.tar.gz -C $SINGULARITY_ROOTFS/opt
+
+    echo
+    echo ">>> PRE"
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.0/pre/sources/
+    make clean linux_gnu
+
+    echo
+    echo ">>> MODEL"
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.0/model/source/
+    make clean linux_gnu
+
+    echo 
+    echo ">>> POS"
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.0/pos/source/
+    make clean linux2
+
+    echo 
+    echo ">>> BAM_V1.2.0 EXECUTABLES"
+    echo
+
+    ls $SINGULARITY_ROOTFS/usr/local/bin
+
+    echo
+    echo ">>> ALL DONE!"
+    echo
