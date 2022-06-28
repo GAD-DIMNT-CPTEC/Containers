@@ -1,0 +1,42 @@
+Bootstrap: docker
+From: ubuntu:20.04
+
+%post
+    apt-get -y update
+    apt-get -y upgrade
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt install -y build-essential
+    apt install -y automake autoconf autoconf-archive libtool pkg-config
+    apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
+    apt install -y wget
+    apt install -y gcc-9 g++-9 gfortran-9
+    apt install -y libblas3 liblapack3
+
+    apt-get -y autoremove
+    apt-get -y autoclean
+    apt-get -y clean
+
+    echo
+    echo ">>> BUILDING SCANTEC V2.0.0..."
+    echo
+
+    mkdir -p $SINGULARITY_ROOTFS/opt
+    cd $SINGULARITY_ROOTFS/opt
+
+    wget https://github.com/GAM-DIMNT-CPTEC/SCANTEC/archive/refs/tags/V2.0.0.tar.gz
+   
+    tar -zxvf V2.0.0.tar.gz
+
+    cd SCANTEC-2.0.0
+    
+    export SCAN_ARCH=GNU_Linux
+
+    make
+ 
+    ls $SINGULARITY_ROOTFS/opt/SCANTEC-2.0.0/bin
+
+    echo
+    echo ">>> ALL DONE!"
+    echo
