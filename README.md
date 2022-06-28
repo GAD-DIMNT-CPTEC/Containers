@@ -8,7 +8,7 @@ Na máquina Egeon, utilize o `singularity` para construir o container. Por exemp
 
 ```
 module load singularity
-singularity build --fakeroot arquivo.def
+singularity build --fakeroot arquivo.sif arquivo.def
 ```
 
 No final do processo, será gerado o arquivo `arquivo.sif`.
