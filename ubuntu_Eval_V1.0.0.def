@@ -1,0 +1,91 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%help
+    Container para a utilização do readDiag e do EVALU. Ao carregar o shell, utilize os comandos
+    "source /opt/miniconda/etc/profile.d/conda.sh" e
+    "conda activate readDiag"
+    para ativar o ambiente do Anaconda com a instalação do readDiag.
+
+%setup
+    cd $SINGULARITY_ROOTFS/root
+    touch .condarc
+
+%post -c /bin/bash 
+    echo
+    echo ">>> INSTALING THE BASE SYSTEM..."
+    echo
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get -y update
+    apt-get -y upgrade
+
+    apt install -y vim
+    apt install -y build-essential
+    apt install -y automake autoconf autoconf-archive libtool pkg-config
+    apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
+    apt install -y wget subversion git
+    apt install -y gcc-4.8 g++-4.8 gfortran-4.8
+    apt install -y libstdc++-6-dev manpages-dev
+    apt install -y libhugetlbfs0 libhugetlbfs-dev libblas3 liblapack3
+    apt install -y grads
+    apt install -y glueviz libjpeg8 imagemagick
+
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 100
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-4.8 100
+    update-alternatives --auto gcc
+    update-alternatives --auto g++
+    update-alternatives --auto gfortran
+
+    ldconfig
+
+    echo
+    echo ">>> INSTALING THE MINICONDA PACKAGE..."
+    echo
+
+    apt-get -y autoremove
+    apt-get -y autoclean
+    apt-get -y clean
+
+    apt-get -y clean
+
+    cd $SINGULARITY_ROOTFS/opt
+
+    wget -c https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh 
+
+    /bin/bash Miniconda3-latest-Linux-x86_64.sh -bfp $SINGULARITY_ROOTFS/opt/miniconda
+
+    rm $SINGULARITY_ROOTFS/opt/Miniconda3-latest-Linux-x86_64.sh
+
+    export CONDA_ALWAYS_YES="true"
+
+    source $SINGULARITY_ROOTFS/opt/miniconda/etc/profile.d/conda.sh
+
+    conda config --file /.condarc --add channels defaults
+    conda config --file /.condarc --add channels conda-forge
+
+    conda update conda
+
+    echo
+    echo ">>> CLONING THE READDIAG PACKAGE..."
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt
+
+    git clone https://github.com/GAD-DIMNT-CPTEC/readDiag.git
+
+    cd $SINGULARITY_ROOTFS/opt/readDiag
+
+    conda env create -f environment.yml
+
+    conda activate readDiag
+
+    conda install -c anaconda basemap
+
+    python setup.py install
+
+    echo
+    echo ">>> ALL DONE!"
+    echo
