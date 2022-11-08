@@ -7,6 +7,7 @@ Repositório para alocar arquivos de definição de containers (Singularity, Doc
 * Arquivo `SCANTEC_V2.0.0.def`: arquivo de definição do singularity para compilar o SCANTEC V2.0.0 utilizando o GCC 9.0 (utiliza o Ubuntu 20.04 como base);
 * Arquivo `ubuntu_Eval_V1.0.0.def`: arquivo de definição do singularity para compilar o readDiag utilizando o GCC 4.8.5 (utiliza o Ubuntu 18.04 como base), incluindo o Miniconda e um ambiente chamado readDiag;
 * Arquivo `ubuntu-18.04_gcc-4.8.5_mpich-3.3.def`: arquivo de definição do singularity para compilação do oensMB09 e BAM_V1.2.1 utilizando o GCC 4.8.5 e o MPICH 3.3 na Egeon (utiliza o Ubuntu 18.04 como base).
+* Arquivo `xc50_dev.def`: arquivo de definição do singularity para compilação do oensMB09 e BAM_V1.2.X utilizando o GCC 5.5.0, MPICH 3.1.3 e LAPACK/BLAS 3.4.2 (instalados a partir do PETSC 3.7.6 - da mesma forma como na máquina Cray XC50), utiliza o Ubuntu 18.04 como base.
 
 ## Uso
 

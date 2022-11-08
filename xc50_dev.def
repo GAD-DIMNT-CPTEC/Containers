@@ -1,0 +1,97 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%labels
+    Author: carlos.bastarz@inpe.br
+
+%help
+    Container para a compilação de códigos computacionais utilizando o GCC 5.3.0
+    (a mesma versão disponível na máquina XC50). Este container foi testados apenas
+    na máquina Egeon.
+    Uso:
+    module load singularity
+    singularity shell -e xc50_dev.def
+
+%pre
+    # This is going to delete your cache to make sure you are getting a minty
+    # fresh image from the library
+    singularity cache clean --force
+
+%post
+    apt-get -y update
+    apt-get -y upgrade
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt install -y build-essential
+    apt install -y automake autoconf autoconf-archive libtool pkg-config
+    apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
+    apt install -y wget 
+    apt install -y vim
+    apt install -y gdb
+    apt install -y gcc-5 g++-5 gfortran-5
+    apt install -y libstdc++-6-dev manpages-dev
+    #apt install -y libhugetlbfs0 libhugetlbfs-dev libblas3 liblapack3
+    apt install -y libhugetlbfs0 libhugetlbfs-dev
+    apt install -y grads
+    apt install -y glueviz libjpeg8 imagemagick
+    #apt install -y python3-matplotlib
+    apt install -y valgrind
+
+    cd $SINGULARITY_ROOTFS/usr/bin
+    ln -s make gmake
+
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 100
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 100
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-5 100
+    update-alternatives --auto gcc
+    update-alternatives --auto g++
+    update-alternatives --auto gfortran
+
+    apt-get -y autoremove
+    apt-get -y autoclean
+    apt-get -y clean
+
+    echo
+    echo ">>> BUILDING THE PETSC 3.7.6"
+    echo ">>> THIS PACKAGE INSTALL THE MPICH 3.1.3"
+    echo ">>> AND THE LAPACK AND BLAS 3.4.2..."
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt
+    wget https://ftp.mcs.anl.gov/pub/petsc/release-snapshots/petsc-3.7.6.tar.gz
+    mkdir -p $SINGULARITY_ROOTFS/opt/petsc-3.7.6
+    tar -zxvf petsc-3.7.6.tar.gz
+    cd $SINGULARITY_ROOTFS/opt/petsc-3.7.6
+    ./configure --prefix=$SINGULARITY_ROOTFS/usr/local --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --download-mpich --download-fblaslapack
+    make all check
+    make PETSC_DIR=$SINGULARITY_ROOTFS/opt/petsc-3.7.6 PETSC_ARCH=arch-linux2-c-debug streams
+    #make PETSC_DIR=$SINGULARITY_ROOTFS/usr/local PETSC_ARCH=arch-linux2-c-debug streams
+    #cd $SINGULARITY_ROOTFS/usr/bin
+    #ln -s cd $SINGULARITY_ROOTFS/opt/petsc-3.7.6/arch-linux2-c-debug/bin/* .
+    #cd $SINGULARITY_ROOTFS/usr/lib
+    #ln -s cd $SINGULARITY_ROOTFS/opt/petsc-3.7.6/arch-linux2-c-debug/lib/* .
+    #cd $SINGULARITY_ROOTFS/usr/include
+    #ln -s cd $SINGULARITY_ROOTFS/opt/petsc-3.7.6/arch-linux2-c-debug/include/* .
+
+    #echo
+    #echo ">>> BUILDING THE MPICH 3.3..."
+    #echo
+    #
+    #cd $SINGULARITY_ROOTFS/opt
+    #wget https://www.mpich.org/static/downloads/3.3/mpich-3.3.tar.gz
+    #
+    #mkdir -p $SINGULARITY_ROOTFS/opt/mpich
+    #cd $SINGULARITY_ROOTFS/opt
+    #tar -zxvf mpich-3.3.tar.gz
+    #cd $SINGULARITY_ROOTFS/opt/mpich-3.3
+    # 
+    #./configure --prefix=$SINGULARITY_ROOTFS/usr/local
+    #make 
+    #make install
+
+    ldconfig
+
+    echo
+    echo ">>> ALL DONE!"
+    echo
