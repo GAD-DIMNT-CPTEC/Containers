@@ -15,6 +15,7 @@ From: ubuntu:18.04
     apt install -y automake autoconf autoconf-archive libtool pkg-config
     apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
     apt install -y wget
+    apt install -y vim
     apt install -y unzip
     apt install -y gcc-4.8 g++-4.8 gfortran-4.8
     apt install -y libstdc++-6-dev manpages-dev
