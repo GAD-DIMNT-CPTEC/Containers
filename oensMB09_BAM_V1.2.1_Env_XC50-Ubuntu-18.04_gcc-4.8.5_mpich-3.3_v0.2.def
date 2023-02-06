@@ -120,6 +120,13 @@ From: ubuntu:18.04
     make clean linux_gnu_egeon
 
     echo 
+    echo ">>> GRH"
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.1/grh/source/
+    make clean linux_gnu_egeon
+
+    echo 
     echo ">>> BAM_V1.2.1 EXECUTABLES"
     echo
 
