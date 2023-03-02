@@ -1,0 +1,137 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%files
+    /mnt/beegfs/carlos.bastarz/cfbastarz.tmp/pacote/BAM_V1.2.1.tar.gz /root/
+    /mnt/beegfs/carlos.bastarz/pacotes/oensMB09-3-testes-com-o-compilador-intel.zip /root/
+
+%post
+    apt-get -y update
+    apt-get -y upgrade
+
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt install -y build-essential
+    apt install -y automake autoconf autoconf-archive libtool pkg-config
+    apt install -y libssl-dev uuid-dev libgpgme11-dev squashfs-tools
+    apt install -y wget
+    #apt install -y cmake
+    apt install -y vim
+    apt install -y unzip
+    apt install -y gcc-4.8 g++-4.8 gfortran-4.8
+    apt install -y libstdc++-6-dev manpages-dev
+    apt install -y libhugetlbfs0 libhugetlbfs-dev libblas3 liblapack3
+    apt install -y grads
+    apt install -y glueviz libjpeg8 imagemagick
+
+    cd $SINGULARITY_ROOTFS/usr/bin
+    ln -s make gmake
+
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 100
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 100
+    update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-4.8 100
+    update-alternatives --auto gcc
+    update-alternatives --auto g++
+    update-alternatives --auto gfortran
+
+    apt-get -y autoremove
+    apt-get -y autoclean
+    apt-get -y clean
+
+    echo
+    echo ">>> BUILDING THE MPICH 3.3..."
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt
+    wget https://www.mpich.org/static/downloads/3.3/mpich-3.3.tar.gz
+
+    mkdir -p $SINGULARITY_ROOTFS/opt/mpich
+    cd $SINGULARITY_ROOTFS/opt
+    tar -zxvf mpich-3.3.tar.gz
+    cd $SINGULARITY_ROOTFS/opt/mpich-3.3
+     
+    ./configure --prefix=$SINGULARITY_ROOTFS/usr/local
+    make 
+    make install
+
+    echo
+    echo ">>> BUILDING THE CMAKE 3.25.2..."
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt
+    wget https://github.com/Kitware/CMake/releases/download/v3.25.2/cmake-3.25.2.tar.gz
+
+    mkdir -p $SINGULARITY_ROOTFS/opt/cmake
+    cd $SINGULARITY_ROOTFS/opt
+    tar -zxvf cmake-3.25.2.tar.gz
+    cd $SINGULARITY_ROOTFS/opt/cmake-3.25.2
+    ./configure --prefix=$SINGULARITY_ROOTFS/usr/local
+    make 
+    make install
+
+    ldconfig
+
+    echo 
+    echo ">>> BUILDING THE OENSMB09 PERTURBATION METHOD..."
+    echo
+
+    unzip /root/oensMB09-3-testes-com-o-compilador-intel.zip -d $SINGULARITY_ROOTFS/opt
+
+    echo
+    echo ">>> MÉTODO MB09"
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt/oensMB09-3-testes-com-o-compilador-intel
+    ./config_spcon.sh configure TQ0126L028 gnu
+    make comp=gnu
+
+    echo
+    echo "PRODUTOS"
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt/oensMB09-3-testes-com-o-compilador-intel/produtos
+    make comp=gnu
+
+    echo
+    echo ">>> BUILDING THE BAM_V1.2.1 MODEL..."
+    echo
+
+    tar -zxvf /root/BAM_V1.2.1.tar.gz -C $SINGULARITY_ROOTFS/opt
+
+    echo
+    echo ">>> PRE"
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.1/pre/sources/
+    make clean linux_gnu_egeon
+
+    echo
+    echo ">>> MODEL"
+    echo
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.1/model/source/
+    make clean linux_gnu_egeon
+
+    echo 
+    echo ">>> POS"
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.1/pos/source/
+    make clean linux_gnu_egeon
+
+    echo 
+    echo ">>> GRH"
+    echo 
+
+    cd $SINGULARITY_ROOTFS/opt/BAM_V1.2.1/grh/source/
+    make clean linux_gnu_egeon
+
+    echo 
+    echo ">>> BAM_V1.2.1 EXECUTABLES"
+    echo
+
+    ls $SINGULARITY_ROOTFS/usr/local/bin
+
+    echo
+    echo ">>> ALL DONE!"
+    echo
